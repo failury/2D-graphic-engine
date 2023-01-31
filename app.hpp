@@ -1,7 +1,8 @@
 #pragma once
 #include "_window.hpp"
 #include "engine_pipeline.hpp"
-namespace engine{
+#include "_device.hpp"
+namespace my_engine{
     class app
     {
     
@@ -12,7 +13,8 @@ namespace engine{
     private:
         /* data */
         _window _window{WIDTH, HEIGHT, "My Name"};
-        engine_pipeline enginepipeline{"shaders/simple_shader.vert.spv","shaders/simple_shader.frag.spv"};
+        GameEngineDevice GameEngineDevice{_window}; 
+        engine_pipeline engine_pipeline{GameEngineDevice,"shaders/simple_shader.vert.spv","shaders/simple_shader.frag.spv",engine_pipeline::defaultPipeLineConfigInfo(WIDTH, HEIGHT)};
     };
     
     

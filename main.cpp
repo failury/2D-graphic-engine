@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <cstdlib>
 int main(){
-    engine::app a{};
+    my_engine::app a{};
     try{
         a.run();
     } catch (const std::exception &e){

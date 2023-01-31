@@ -1,8 +1,9 @@
 #pragma once
+
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <string>
-#define GLFW_INCLUDE_VULKAN
-namespace engine{
+namespace my_engine{
 class _window {
     public:
         _window(int w, int h, std::string name);
@@ -10,6 +11,7 @@ class _window {
         _window(const _window &) = delete; // prohibit copying
         _window &operator=(const _window &) = delete; // disable the operator
         bool shouldClose() {return glfwWindowShouldClose(window);}
+        void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
 
 
     private:
