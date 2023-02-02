@@ -8,7 +8,6 @@ namespace my_engine{
     struct PipeLineConfigInfo {
         VkViewport viewport;
         VkRect2D scissor;
-        VkPipelineViewportStateCreateInfo viewportInfo;
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
         VkPipelineRasterizationStateCreateInfo rasterizationInfo;
         VkPipelineMultisampleStateCreateInfo multisampleInfo;
@@ -19,19 +18,20 @@ namespace my_engine{
         VkRenderPass renderPass = nullptr;
         uint32_t subpass = 0;
     };
-    class engine_pipeline
+    class Engine_Pipeline
     {
     public:
-        engine_pipeline(
+        Engine_Pipeline(
       GameEngineDevice& device,
       const std::string& vertFilepath,
       const std::string& fragFilepath,
       const PipeLineConfigInfo& configInfo);
-      ~engine_pipeline();
+      ~Engine_Pipeline();
         // avoid copying
-        engine_pipeline(const engine_pipeline&) = delete;
-        void operator=(const engine_pipeline&) = delete;
+        Engine_Pipeline(const Engine_Pipeline&) = delete;
+        void operator=(const Engine_Pipeline&) = delete;
         static PipeLineConfigInfo defaultPipeLineConfigInfo(uint32_t width, uint32_t height);
+        void Bind(VkCommandBuffer commandBuffer);
 
     private:
         /* data */

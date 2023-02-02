@@ -1,7 +1,10 @@
 #pragma once
+#include <memory>
+#include <vector>
 #include "_window.hpp"
 #include "engine_pipeline.hpp"
 #include "_device.hpp"
+#include "engine_swapchain.hpp"
 namespace my_engine{
     class app
     {
@@ -9,12 +12,25 @@ namespace my_engine{
     public:
         static constexpr int WIDTH = 800;
         static constexpr int HEIGHT = 600;
+        app();
+        ~app();
+        app(const app& ) = delete;
+        app &operator=(const app&) = delete;
         void run();
+        
+
     private:
+        void createPipelineLayout();
+        void createPipeLine();
+        void createCommandBuffers();
+        void drawFrame();
         /* data */
         _window _window{WIDTH, HEIGHT, "My Name"};
-        GameEngineDevice GameEngineDevice{_window}; 
-        engine_pipeline engine_pipeline{GameEngineDevice,"shaders/simple_shader.vert.spv","shaders/simple_shader.frag.spv",engine_pipeline::defaultPipeLineConfigInfo(WIDTH, HEIGHT)};
+        GameEngineDevice GameEngineDevice{_window};
+        Engine_SwapChain Engine_SwapChain{GameEngineDevice, _window.getExtent()};
+        std::unique_ptr<Engine_Pipeline> engine_pipeline;
+        VkPipelineLayout pipelineLayout;
+        std:: vector<VkCommandBuffer> commandBuffers;
     };
     
     

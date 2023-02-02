@@ -6,12 +6,12 @@
 #include <cassert>
 namespace my_engine{
 
-    engine_pipeline::engine_pipeline(GameEngineDevice &device, const std::string &vertFilePath, const std::string &fragFilePath, const PipeLineConfigInfo &config) : device{device}
+    Engine_Pipeline::Engine_Pipeline(GameEngineDevice &device, const std::string &vertFilePath, const std::string &fragFilePath, const PipeLineConfigInfo &config) : device{device}
     {
         createPipeline(vertFilePath, fragFilePath, config);
     }
 
-    engine_pipeline::engine_pipeline::~engine_pipeline()
+    Engine_Pipeline::Engine_Pipeline::~Engine_Pipeline()
     {
         vkDestroyShaderModule(device.device(), vertexShaderModule, nullptr);
         vkDestroyShaderModule(device.device(), fragShaderModule, nullptr);
@@ -19,7 +19,7 @@ namespace my_engine{
 
     }
 
-    PipeLineConfigInfo engine_pipeline::defaultPipeLineConfigInfo(uint32_t width, uint32_t height)
+    PipeLineConfigInfo Engine_Pipeline::defaultPipeLineConfigInfo(uint32_t width, uint32_t height)
     {
         PipeLineConfigInfo configinfo{};
         // specify the input assemblytypes
@@ -39,11 +39,7 @@ namespace my_engine{
         configinfo.scissor.offset = {0,0};
         configinfo.scissor.extent = {width, height};
 
-        configinfo.viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-        configinfo.viewportInfo.viewportCount = 1;
-        configinfo.viewportInfo.pViewports = &configinfo.viewport;
-        configinfo.viewportInfo.scissorCount = 1;
-        configinfo.viewportInfo.pScissors = &configinfo.scissor;
+        
 
         // rasterization stages
         configinfo.rasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -103,7 +99,12 @@ namespace my_engine{
         return configinfo;
     }
 
-    std::vector<char> engine_pipeline::readFile(const std::string &filepath)
+    void Engine_Pipeline::Bind(VkCommandBuffer commandBuffer)
+    {
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+    }
+
+    std::vector<char> Engine_Pipeline::readFile(const std::string &filepath)
     {
         // seek to end when reading
         std:: ifstream file(filepath, std::ios::ate | std::ios::binary); 
@@ -117,7 +118,7 @@ namespace my_engine{
         file.close();
         return buffer;
     }
-    void engine_pipeline::createPipeline(const std::string & vertFilePath, const std::string & fragFilePath, const PipeLineConfigInfo &config)
+    void Engine_Pipeline::createPipeline(const std::string & vertFilePath, const std::string & fragFilePath, const PipeLineConfigInfo &config)
     {
         assert(config.pipelineLayout != VK_NULL_HANDLE && "Cannot create graphics pipeline: no pipelinelayout provided in config info");
         assert(config.renderPass != VK_NULL_HANDLE && "Cannot create graphics pipeline: no renderpass provided in config info");
@@ -153,13 +154,20 @@ namespace my_engine{
         vertexInputInfo.pVertexAttributeDescriptions = nullptr;
         vertexInputInfo.pVertexBindingDescriptions = nullptr;
 
+        VkPipelineViewportStateCreateInfo viewportInfo{};
+        viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+        viewportInfo.viewportCount = 1;
+        viewportInfo.pViewports = &config.viewport;
+        viewportInfo.scissorCount = 1;
+        viewportInfo.pScissors = &config.scissor;
+
         VkGraphicsPipelineCreateInfo pipelineInfo {};
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         pipelineInfo.stageCount = 2;
         pipelineInfo.pStages = shaderStages;
         pipelineInfo.pVertexInputState = &vertexInputInfo;
         pipelineInfo.pInputAssemblyState = &config.inputAssemblyInfo;
-        pipelineInfo.pViewportState = &config.viewportInfo;
+        pipelineInfo.pViewportState = &viewportInfo;
         pipelineInfo.pRasterizationState = &config.rasterizationInfo;
         pipelineInfo.pMultisampleState = &config.multisampleInfo;
         pipelineInfo.pColorBlendState = &config.colorBlendInfo;
@@ -181,7 +189,7 @@ namespace my_engine{
 
     }
 
-    void engine_pipeline::createShaderModule(const std::vector<char> &code, VkShaderModule *shaderModule)
+    void Engine_Pipeline::createShaderModule(const std::vector<char> &code, VkShaderModule *shaderModule)
     {
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
