@@ -5,6 +5,7 @@
 #include "engine_pipeline.hpp"
 #include "_device.hpp"
 #include "engine_swapchain.hpp"
+#include "vertex_model.hpp"
 namespace my_engine{
     class app
     {
@@ -17,9 +18,10 @@ namespace my_engine{
         app(const app& ) = delete;
         app &operator=(const app&) = delete;
         void run();
-        
+
 
     private:
+        void loadModel();
         void createPipelineLayout();
         void createPipeLine();
         void createCommandBuffers();
@@ -31,6 +33,7 @@ namespace my_engine{
         std::unique_ptr<Engine_Pipeline> engine_pipeline;
         VkPipelineLayout pipelineLayout;
         std:: vector<VkCommandBuffer> commandBuffers;
+        std:: unique_ptr<Model> model;
     };
     
     

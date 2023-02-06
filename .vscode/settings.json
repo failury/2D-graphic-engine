@@ -69,5 +69,12 @@
         "vector": "cpp",
         "algorithm": "cpp",
         "filesystem": "cpp"
-    }
+    },
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/Users/failury/Projects/vulkan",
+            "binaryPath": "/Users/failury/Projects/vulkan/a.out",
+            "binaryArgs": []
+        }
+    ]
 }
