@@ -25,11 +25,14 @@ namespace my_engine{
         void createPipelineLayout();
         void createPipeLine();
         void createCommandBuffers();
+        void freeCommandBuffers();
         void drawFrame();
+        void recreateSwapChain();
+        void recordCommandBuffer(int imageIndex);
         /* data */
         _window _window{WIDTH, HEIGHT, "My Name"};
         GameEngineDevice GameEngineDevice{_window};
-        Engine_SwapChain Engine_SwapChain{GameEngineDevice, _window.getExtent()};
+        std:: unique_ptr<Engine_SwapChain> engine_SwapChain;
         std::unique_ptr<Engine_Pipeline> engine_pipeline;
         VkPipelineLayout pipelineLayout;
         std:: vector<VkCommandBuffer> commandBuffers;

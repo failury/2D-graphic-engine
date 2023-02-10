@@ -8,6 +8,7 @@
 // std lib headers
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace my_engine
 {
@@ -18,10 +19,11 @@ namespace my_engine
     static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
     Engine_SwapChain(GameEngineDevice &deviceRef, VkExtent2D windowExtent);
+    Engine_SwapChain(GameEngineDevice &deviceRef, VkExtent2D windowExtent, std::shared_ptr<Engine_SwapChain> previous);
     ~Engine_SwapChain();
 
     Engine_SwapChain(const Engine_SwapChain &) = delete;
-    void operator=(const Engine_SwapChain &) = delete;
+    Engine_SwapChain& operator=(const Engine_SwapChain &) = delete;
 
     VkFramebuffer getFrameBuffer(int index) { return swapChainFramebuffers[index]; }
     VkRenderPass getRenderPass() { return renderPass; }
@@ -42,6 +44,7 @@ namespace my_engine
     VkResult submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
 
   private:
+    void init();
     void createSwapChain();
     void createImageViews();
     void createDepthResources();
@@ -72,6 +75,7 @@ namespace my_engine
     VkExtent2D windowExtent;
 
     VkSwapchainKHR swapChain;
+    std::shared_ptr<Engine_SwapChain> oldSwapChain;
 
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;

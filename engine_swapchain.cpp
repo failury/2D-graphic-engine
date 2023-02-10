@@ -14,12 +14,14 @@ namespace my_engine
   Engine_SwapChain::Engine_SwapChain(GameEngineDevice &deviceRef, VkExtent2D extent)
       : device{deviceRef}, windowExtent{extent}
   {
-    createSwapChain();
-    createImageViews();
-    createRenderPass();
-    createDepthResources();
-    createFramebuffers();
-    createSyncObjects();
+    init();
+  }
+  Engine_SwapChain::Engine_SwapChain(GameEngineDevice &deviceRef, VkExtent2D extent, std::shared_ptr<Engine_SwapChain> previous)
+      : device{deviceRef}, windowExtent{extent}, oldSwapChain{previous}
+  {
+    init();
+    // clean up old swap chain since its no long needed
+    oldSwapChain = nullptr;
   }
 
   Engine_SwapChain::~Engine_SwapChain()
@@ -130,6 +132,16 @@ namespace my_engine
     return result;
   }
 
+  void Engine_SwapChain::init()
+  {
+    createSwapChain();
+    createImageViews();
+    createRenderPass();
+    createDepthResources();
+    createFramebuffers();
+    createSyncObjects();
+  }
+
   void Engine_SwapChain::createSwapChain()
   {
     SwapChainSupportDetails swapChainSupport = device.getSwapChainSupport();
@@ -178,7 +190,7 @@ namespace my_engine
     createInfo.presentMode = presentMode;
     createInfo.clipped = VK_TRUE;
 
-    createInfo.oldSwapchain = VK_NULL_HANDLE;
+    createInfo.oldSwapchain = oldSwapChain == nullptr ? VK_NULL_HANDLE : oldSwapChain->swapChain;
 
     if (vkCreateSwapchainKHR(device.device(), &createInfo, nullptr, &swapChain) != VK_SUCCESS)
     {
@@ -395,7 +407,7 @@ namespace my_engine
   {
     for (const auto &availableFormat : availableFormats)
     {
-      if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&
+      if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
           availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
       {
         return availableFormat;

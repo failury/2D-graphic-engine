@@ -15,14 +15,24 @@ namespace my_engine
             throw std::runtime_error("failed to create window surface");
         }
     }
+    void _window::framebufferResizeCallback(GLFWwindow *window, int width, int height)
+    {
+        // reinterpret_cast does not garrantee the address of the value staying the same
+        auto w =  reinterpret_cast<_window *>(glfwGetWindowUserPointer(window));
+        w->frameBufferResized = true;
+        w->width = width;
+        w->height = height;
+    }
     void _window::initWindow()
     {
         glfwInit();
         // dont create opengl context
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         // dont resize after creating
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
         // initialize the window pointer 
         window = glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
+        glfwSetWindowUserPointer(window, this);
+        glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
     }
 } // namespace engine

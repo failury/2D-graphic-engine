@@ -19,27 +19,19 @@ namespace my_engine{
 
     }
 
-    PipeLineConfigInfo Engine_Pipeline::defaultPipeLineConfigInfo(uint32_t width, uint32_t height)
+    void Engine_Pipeline::defaultPipeLineConfigInfo(PipeLineConfigInfo &configinfo)
     {
-        PipeLineConfigInfo configinfo{};
         // specify the input assemblytypes
         configinfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
         configinfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         configinfo.inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
 
-        // viewports, screen width, height, depth
-        // how we transfer the input to output image
-        configinfo.viewport.x = 0.0f;
-        configinfo.viewport.y = 0.0f;
-        configinfo.viewport.width = static_cast<float>(width);
-        configinfo.viewport.height = static_cast<float>(height);
-        configinfo.viewport.maxDepth = 1.0f;
-        configinfo.viewport.minDepth = 0.0f;
-
-        configinfo.scissor.offset = {0,0};
-        configinfo.scissor.extent = {width, height};
-
-        
+        // viewport
+        configinfo.viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+        configinfo.viewportInfo.viewportCount = 1;
+        configinfo.viewportInfo.pViewports = nullptr;
+        configinfo.viewportInfo.scissorCount = 1;
+        configinfo.viewportInfo.pScissors = nullptr;
 
         // rasterization stages
         configinfo.rasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -94,9 +86,13 @@ namespace my_engine{
         configinfo.depthStencilInfo.front = {};  // Optional
         configinfo.depthStencilInfo.back = {};   // Optional
 
+        // dynamic states enables
+        configinfo.dynamicStateEnables = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+        configinfo.dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        configinfo.dynamicStateInfo.pDynamicStates = configinfo.dynamicStateEnables.data();
+        configinfo.dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(configinfo.dynamicStateEnables.size());
+        configinfo.dynamicStateInfo.flags = 0;
 
-
-        return configinfo;
     }
 
     void Engine_Pipeline::Bind(VkCommandBuffer commandBuffer)
@@ -156,12 +152,6 @@ namespace my_engine{
         vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
         vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
 
-        VkPipelineViewportStateCreateInfo viewportInfo{};
-        viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-        viewportInfo.viewportCount = 1;
-        viewportInfo.pViewports = &config.viewport;
-        viewportInfo.scissorCount = 1;
-        viewportInfo.pScissors = &config.scissor;
 
         VkGraphicsPipelineCreateInfo pipelineInfo {};
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -169,12 +159,12 @@ namespace my_engine{
         pipelineInfo.pStages = shaderStages;
         pipelineInfo.pVertexInputState = &vertexInputInfo;
         pipelineInfo.pInputAssemblyState = &config.inputAssemblyInfo;
-        pipelineInfo.pViewportState = &viewportInfo;
+        pipelineInfo.pViewportState = &config.viewportInfo;
         pipelineInfo.pRasterizationState = &config.rasterizationInfo;
         pipelineInfo.pMultisampleState = &config.multisampleInfo;
         pipelineInfo.pColorBlendState = &config.colorBlendInfo;
         pipelineInfo.pDepthStencilState = &config.depthStencilInfo;
-        pipelineInfo.pDynamicState = nullptr;
+        pipelineInfo.pDynamicState = &config.dynamicStateInfo;
 
         pipelineInfo.layout = config.pipelineLayout;
         pipelineInfo.renderPass = config.renderPass;

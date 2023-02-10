@@ -6,14 +6,16 @@
 
 namespace my_engine{
     struct PipeLineConfigInfo {
-        VkViewport viewport;
-        VkRect2D scissor;
+
+        VkPipelineViewportStateCreateInfo viewportInfo;
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
         VkPipelineRasterizationStateCreateInfo rasterizationInfo;
         VkPipelineMultisampleStateCreateInfo multisampleInfo;
         VkPipelineColorBlendAttachmentState colorBlendAttachment;
         VkPipelineColorBlendStateCreateInfo colorBlendInfo;
         VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
+        std::vector<VkDynamicState> dynamicStateEnables;
+        VkPipelineDynamicStateCreateInfo dynamicStateInfo;
         VkPipelineLayout pipelineLayout = nullptr;
         VkRenderPass renderPass = nullptr;
         uint32_t subpass = 0;
@@ -29,8 +31,8 @@ namespace my_engine{
       ~Engine_Pipeline();
         // avoid copying
         Engine_Pipeline(const Engine_Pipeline&) = delete;
-        void operator=(const Engine_Pipeline&) = delete;
-        static PipeLineConfigInfo defaultPipeLineConfigInfo(uint32_t width, uint32_t height);
+        Engine_Pipeline& operator=(const Engine_Pipeline&) = delete;
+        static void defaultPipeLineConfigInfo(PipeLineConfigInfo &configinfo);
         void Bind(VkCommandBuffer commandBuffer);
 
     private:
