@@ -2,11 +2,21 @@
 #include <stdexcept>
 #include <array>
 #include <iostream>
+
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 namespace my_engine
 {
+    struct SimplePushConstantData{
+        glm::mat2 transform{1.f};
+        glm::vec2 offset;
+        alignas(16)glm::vec3 color;
+    };
     app::app()
     {
-        loadModel();
+        loadGameObjects();
         createPipelineLayout();
         recreateSwapChain();
         createCommandBuffers();
@@ -26,18 +36,31 @@ namespace my_engine
         }
         vkDeviceWaitIdle(GameEngineDevice.device());
     }
-    void app::loadModel()
+    void app::loadGameObjects()
     {
         std::vector<Model::Vertex> vertices{
             {{0.0f, -0.5f},{1.0f, 0.0f, 0.0f}}, {{0.5f, 0.5f},{0.0f, 1.0f, 0.0f}}, {{-0.5f, 0.5f},{0.0f, 0.0f, 1.0f}}};
-        model = std::make_unique<Model>(GameEngineDevice, vertices);
+        auto model = std::make_shared<Model>(GameEngineDevice, vertices);
+        auto triangle = GameObject::createGameObject();
+        triangle.model = model;
+        triangle.color = {.1f, .8f, .1f};
+        triangle.transform2d.translation.x = .2f;
+        triangle.transform2d.scale = {2.f, .5f};
+        triangle.transform2d.rotation = .25f * glm:: two_pi<float>();
+        gameObjects.push_back(std::move(triangle));
     }
     void app::createPipelineLayout()
     {
+        VkPushConstantRange pushConstantRange {};
+        pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+        pushConstantRange.offset = 0;
+        pushConstantRange.size = sizeof(SimplePushConstantData);
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipelineLayoutInfo.setLayoutCount = 0;
         pipelineLayoutInfo.pSetLayouts = nullptr;
+        pipelineLayoutInfo.pushConstantRangeCount = 1;
+        pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
         if (vkCreatePipelineLayout(GameEngineDevice.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create pipeline layout");
@@ -137,7 +160,7 @@ namespace my_engine
             renderPassInfo.renderArea.extent = engine_SwapChain->getSwapChainExtent();
 
             std::array<VkClearValue, 2> clearValues{};
-            clearValues[0].color = {0.1f, 0.1f, 0.1f, 0.1f};
+            clearValues[0].color = {0.01f, 0.1f, 0.1f, 0.1f};
             clearValues[1].depthStencil = {1.0f, 0};
             renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
             renderPassInfo.pClearValues = clearValues.data();
@@ -154,13 +177,26 @@ namespace my_engine
             VkRect2D scissor{{0,0}, engine_SwapChain->getSwapChainExtent()};
             vkCmdSetViewport(commandBuffers[imageIndex], 0, 1, &viewport);
             vkCmdSetScissor(commandBuffers[imageIndex], 0,1, &scissor);
-            engine_pipeline->Bind(commandBuffers[imageIndex]);
-            model->bind(commandBuffers[imageIndex]);
-            model->draw(commandBuffers[imageIndex]);
+            renderGameObjects(commandBuffers[imageIndex]);
             vkCmdEndRenderPass(commandBuffers[imageIndex]);
             if (vkEndCommandBuffer(commandBuffers[imageIndex]) != VK_SUCCESS)
             {
                 throw std::runtime_error("failed to record command buffer");
             }
+    }
+    void app::renderGameObjects(VkCommandBuffer commandBuffer)
+    {
+        engine_pipeline->Bind(commandBuffer);
+        for (auto & obj: gameObjects){
+            obj.transform2d.rotation = glm::mod(obj.transform2d.rotation + 0.01f, glm:: two_pi<float>());
+            SimplePushConstantData push{};
+            push.offset = obj.transform2d.translation;
+            push.color = obj.color;
+            push.transform = obj.transform2d.mat2();
+            vkCmdPushConstants(commandBuffer, pipelineLayout,VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,0, sizeof(SimplePushConstantData),&push);
+            obj.model->bind(commandBuffer);
+            obj.model->draw(commandBuffer);
+        }
+
     }
 }

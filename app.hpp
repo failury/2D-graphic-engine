@@ -5,7 +5,7 @@
 #include "engine_pipeline.hpp"
 #include "_device.hpp"
 #include "engine_swapchain.hpp"
-#include "vertex_model.hpp"
+#include "game_object.hpp"
 namespace my_engine{
     class app
     {
@@ -21,7 +21,7 @@ namespace my_engine{
 
 
     private:
-        void loadModel();
+        void loadGameObjects();
         void createPipelineLayout();
         void createPipeLine();
         void createCommandBuffers();
@@ -29,6 +29,7 @@ namespace my_engine{
         void drawFrame();
         void recreateSwapChain();
         void recordCommandBuffer(int imageIndex);
+        void renderGameObjects(VkCommandBuffer commandBuffer);
         /* data */
         _window _window{WIDTH, HEIGHT, "My Name"};
         GameEngineDevice GameEngineDevice{_window};
@@ -36,7 +37,7 @@ namespace my_engine{
         std::unique_ptr<Engine_Pipeline> engine_pipeline;
         VkPipelineLayout pipelineLayout;
         std:: vector<VkCommandBuffer> commandBuffers;
-        std:: unique_ptr<Model> model;
+        std:: vector<GameObject> gameObjects;
     };
     
     
