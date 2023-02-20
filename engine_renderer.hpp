@@ -25,10 +25,14 @@ namespace my_engine{
         VkCommandBuffer getCurrentCommandBuffer() const 
         {
             assert(isFrameStarted && "Cannot get command buffer when frame not in progress");
-            return commandBuffers[currentImageIndex];
+            return commandBuffers[currentFrameIndex];
             }
         VkRenderPass getSwapChainRenderPass() const{
             return engine_SwapChain->getRenderPass();
+        }
+        int getFrameIndex() const{
+            assert(isFrameStarted && "Cannot get frame index when frame not in progress");
+            return currentFrameIndex;
         }
 
 
@@ -44,6 +48,7 @@ namespace my_engine{
         std:: vector<VkCommandBuffer> commandBuffers;
         uint32_t currentImageIndex;
         bool isFrameStarted{false};
+        int currentFrameIndex = 0;
     };
     
     

@@ -60,6 +60,7 @@ namespace my_engine
             throw std::runtime_error("failed to  present swap image");
         }
         isFrameStarted = false;
+        currentFrameIndex = (currentFrameIndex + 1) % Engine_SwapChain::MAX_FRAMES_IN_FLIGHT;
     }
 
     void EngineRenderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer)
@@ -104,7 +105,7 @@ namespace my_engine
 
     void EngineRenderer::createCommandBuffers()
     {
-        commandBuffers.resize(engine_SwapChain->imageCount());
+        commandBuffers.resize(Engine_SwapChain::MAX_FRAMES_IN_FLIGHT);
         VkCommandBufferAllocateInfo allocateInfo{};
         allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -138,14 +139,14 @@ namespace my_engine
         }
         else
         {
-            engine_SwapChain = std::make_unique<Engine_SwapChain>(device, extent, std::move(engine_SwapChain));
-            if (engine_SwapChain->imageCount() != commandBuffers.size())
-            {
-                freeCommandBuffers();
-                createCommandBuffers();
+            std::shared_ptr<Engine_SwapChain> oldSwapChain = std::move(engine_SwapChain);
+            engine_SwapChain = std::make_unique<Engine_SwapChain>(device, extent, oldSwapChain);
+            if (!oldSwapChain->compareSwapFormatss(*engine_SwapChain.get())){
+                throw std::runtime_error("Swap chain image(or depth) has been changed");
             }
+            
         }
-        // createPipeLine();
+        
     }
 
 }

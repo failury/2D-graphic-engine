@@ -1,0 +1,57 @@
+#include "app.hpp"
+#include "engine_renderer.hpp"
+#include "render_system.hpp"
+#include <stdexcept>
+#include <array>
+#include <iostream>
+
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
+namespace my_engine
+{
+    app::app()
+    {
+        loadGameObjects();
+    }
+
+    app::~app()
+    {
+        
+    }
+
+    void app::run()
+    {
+        RenderSystem renderSystem{GameEngineDevice, EngineRenderer.getSwapChainRenderPass()};
+        while (!_window.shouldClose())
+        {
+            glfwPollEvents();
+            if (auto commandBuffer = EngineRenderer.beginFrame()){
+                // beginFrame will return null if failed
+                EngineRenderer.beginSwapChainRenderPass(commandBuffer);
+                renderSystem.renderGameObjects(commandBuffer,gameObjects);
+                EngineRenderer.endSwapChainRenderPass(commandBuffer);
+                EngineRenderer.endFrame();
+            }
+        }
+        vkDeviceWaitIdle(GameEngineDevice.device());
+    }
+    void app::loadGameObjects()
+    {
+        std::vector<Model::Vertex> vertices{
+      {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+      {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+      {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}};
+  auto lveModel = std::make_shared<Model>(GameEngineDevice, vertices);
+
+  auto triangle = GameObject::createGameObject();
+  triangle.model = lveModel;
+  triangle.color = {.1f, .8f, .1f};
+  triangle.transform2d.translation.x = .2f;
+  triangle.transform2d.scale = {2.f, .5f};
+  triangle.transform2d.rotation = .25f * glm::two_pi<float>();
+
+  gameObjects.push_back(std::move(triangle));
+    }
+}
