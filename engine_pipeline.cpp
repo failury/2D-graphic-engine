@@ -45,6 +45,7 @@ namespace my_engine{
         configinfo.rasterizationInfo.depthBiasConstantFactor = 0.0f;
         configinfo.rasterizationInfo.depthBiasClamp = 0.0f;
         configinfo.rasterizationInfo.depthBiasSlopeFactor = 0.0f;
+        configinfo.rasterizationInfo.lineWidth = 1.0;
 
         // multisampling
         configinfo.multisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;

@@ -4,7 +4,7 @@
 #include "_window.hpp"
 #include "engine_pipeline.hpp"
 #include "_device.hpp"
-#include "engine_swapchain.hpp"
+#include "engine_renderer.hpp"
 #include "game_object.hpp"
 namespace my_engine{
     class app
@@ -24,19 +24,14 @@ namespace my_engine{
         void loadGameObjects();
         void createPipelineLayout();
         void createPipeLine();
-        void createCommandBuffers();
-        void freeCommandBuffers();
-        void drawFrame();
-        void recreateSwapChain();
-        void recordCommandBuffer(int imageIndex);
         void renderGameObjects(VkCommandBuffer commandBuffer);
-        /* data */
+
+
         _window _window{WIDTH, HEIGHT, "My Name"};
         GameEngineDevice GameEngineDevice{_window};
-        std:: unique_ptr<Engine_SwapChain> engine_SwapChain;
+        EngineRenderer EngineRenderer{_window, GameEngineDevice};
         std::unique_ptr<Engine_Pipeline> engine_pipeline;
         VkPipelineLayout pipelineLayout;
-        std:: vector<VkCommandBuffer> commandBuffers;
         std:: vector<GameObject> gameObjects;
     };
     
