@@ -139,17 +139,19 @@ void app::run() {
   auto red = GameObject::createGameObject();
   red.transform2d.scale = glm::vec2{.05f};
   red.transform2d.translation = {.5f, .5f};
-  red.color = {1.f, 0.f, 0.f};
+  red.color = {1.f, 1.f, 1.f};
   red.rigidBody2d.velocity = {-.5f, .0f};
   red.model = circleModel;
   physicsObjects.push_back(std::move(red));
   auto blue = GameObject::createGameObject();
   blue.transform2d.scale = glm::vec2{.05f};
   blue.transform2d.translation = {-.45f, -.25f};
-  blue.color = {0.f, 0.f, 1.f};
+  blue.color = {1.f, 0.f, 1.f};
   blue.rigidBody2d.velocity = {.5f, .0f};
   blue.model = circleModel;
   physicsObjects.push_back(std::move(blue));
+
+  
 
   // create vector field
   std::vector<GameObject> vectorField{};
@@ -161,7 +163,7 @@ void app::run() {
       vf.transform2d.translation = {
           -1.0f + (i + 0.5f) * 2.0f / gridCount,
           -1.0f + (j + 0.5f) * 2.0f / gridCount};
-      vf.color = glm::vec3(1.0f);
+      vf.color = {1.f, 1.f, 0.f};
       vf.model = squareModel;
       vectorField.push_back(std::move(vf));
     }
